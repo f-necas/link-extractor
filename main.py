@@ -1,11 +1,9 @@
 import re, sys, argparse, requests
 
-BASE_URL = "https://dev.georchestra.org/geonetwork/srv/api/search/records/_search?bucket=bucket"
-
 body = """
 {
   "aggregations": {},
-  "from": 0,q
+  "from": 0,
   "size": 10000,
   "sort": [{"_score": "desc"}],
   "query": {
@@ -22,7 +20,7 @@ body = """
 """
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('-g', '--gn-url', type=str, help='URL to search for e.g. https://dev.georchestra.org/geonetwork')
+parser.add_argument('-g', '--gn-url', type=str, help='URL to search for e.g. https://dev.georchestra.org/geonetwork', required=True)
 parser.add_argument('-t', '--tpl', type=str, help='Custom output template, must contain DOMAIN_TPL and EXTENSION_TPL string inside', default='template_output.txt')
 parser.add_argument('-wr', '--write-response', type=bool, help='Write response in file', default=False, const=True, nargs='?')
 args = parser.parse_args()
@@ -41,13 +39,13 @@ def get_domain(domain_pattern: str, url: str):
     return None
 
 def main():
-    res = requests.post(BASE_URL, data=body, headers={'Content-Type': 'application/json', "accept": "application/json"})
+    res = requests.post(args.gn_url + '/srv/api/search/records/_search?bucket=bucket', data=body, headers={'Content-Type': 'application/json', "accept": "application/json"})
 
     if args.write_response:
-        with open('response.json', 'w') as wf:
+        with open('body_response.json', 'w') as wf:
             wf.write(str(res.json()))
 
-    with open('iters.txt', 'w') as wf:
+    with open('results.txt', 'w') as wf:
         content = str(res.json())
         url_pattern = re.compile(r'default[\s:\']*https?://([^/"\']*)')
         domain_pattern = re.compile(r'([^\.]+\.[a-z]+)[:\d]*$')

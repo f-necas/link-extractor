@@ -10,7 +10,7 @@ python main.py -t my_template -g gn_url -wr
 
 ## Options
 
+- `-g` or `--gn-url'`: Geonetwork URL. Mandatory
 - `-t` or `--template`: Template name to use.
-- `-g` or `--gn-url'`: Geonetwork URL.
-- `-wr` or `--write-respense`: Saves the json body response from ES into `response.json` file.
+- `-wr` or `--write-respense`: Saves the json body response from ES into `body_response.json` file. Use for debugging purposes.
 
