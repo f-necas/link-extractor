@@ -20,8 +20,8 @@ body = """
 """
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('-g', '--gn-url', type=str, help='URL to search for e.g. https://dev.georchestra.org/geonetwork', required=True)
-parser.add_argument('-t', '--tpl', type=str, help='Custom output template, must contain DOMAIN_TPL and EXTENSION_TPL string inside', default='template_output.txt')
+parser.add_argument('-u', '-url', '--gn-url', type=str, help='URL to search for e.g. https://dev.georchestra.org/geonetwork', required=True)
+parser.add_argument('-t', '--tpl', type=str, help='Custom output template, must contain DOMAIN_TPL and EXTENSION_TPL string inside', default='templates/security-proxy-tpl.tpl')
 parser.add_argument('-wr', '--write-response', type=bool, help='Write response in file', default=False, const=True, nargs='?')
 args = parser.parse_args()
 
