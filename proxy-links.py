@@ -21,14 +21,13 @@ body = """
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('-u', '-url', '--gn-url', type=str, help='URL to search for e.g. https://dev.georchestra.org/geonetwork', required=True)
-parser.add_argument('-t', '--tpl', type=str, help='Custom output template, must contain DOMAIN_TPL and EXTENSION_TPL string inside', default='templates/security-proxy-tpl.tpl')
+parser.add_argument('-t', '--tpl', type=str, help='Custom output template, must contain DOMAIN_TPL and EXTENSION_TPL string inside', default=None)
 parser.add_argument('-wr', '--write-response', type=bool, help='Write response in file', default=False, const=True, nargs='?')
 args = parser.parse_args()
 
-with open(args.tpl, 'r') as f:
-    template = f.read()
 
-def apply_template(value: str):
+
+def apply_template(value: str, template: str):
     return (template
             .replace('DOMAIN_TPL', value.split(".")[0])
             .replace('EXTENSION_TPL', value.split(".")[1]))
@@ -38,6 +37,14 @@ def get_domain(domain_pattern: str, url: str):
         return domain_pattern.findall(url)[0]
     return None
 
+def write_file(template: str, domains: set[str]):
+    with open(template, 'r') as f:
+        template_content = f.read()
+    file_name = template.replace('.tpl', '')
+    with open(file_name + '_results.txt', 'w') as wf:
+        for domain in domains:
+            wf.write(apply_template(domain, template_content))
+
 def main():
     res = requests.post(args.gn_url + '/srv/api/search/records/_search?bucket=bucket', data=body, headers={'Content-Type': 'application/json', "accept": "application/json"})
 
@@ -45,14 +52,18 @@ def main():
         with open('body_response.json', 'w') as wf:
             wf.write(str(res.json()))
 
-    with open('results.txt', 'w') as wf:
-        content = str(res.json())
-        url_pattern = re.compile(r'default[\s:\']*https?://([^/"\']*)')
-        domain_pattern = re.compile(r'([^\.]+\.[a-z]+)[:\d]*$')
-        urls = set(list(filter(None, url_pattern.findall(content))))
-        domains = set(filter(None, [get_domain(domain_pattern, url) for url in urls]))
-        for domain in domains:
-            wf.write(apply_template(domain))
+    content = str(res.json())
+    url_pattern = re.compile(r'default[\s:\']*https?://([^/"\']*)')
+    domain_pattern = re.compile(r'([^\.]+\.[a-z]+)[:\d]*$')
+    urls = set(list(filter(None, url_pattern.findall(content))))
+    domains = set(filter(None, [get_domain(domain_pattern, url) for url in urls]))
+
+    if args.tpl is not None:
+        write_file(args.tpl, domains)
+    else:
+        write_file('templates/security-proxy.tpl', domains)
+        write_file('templates/mapstore2.tpl', domains)
+
 
     print('Done with', domains.__len__(), 'unique domains')
 
