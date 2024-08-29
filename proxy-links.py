@@ -1,4 +1,4 @@
-import re, sys, argparse, requests
+import re, sys, argparse, requests, os
 
 body = """
 {
@@ -21,7 +21,7 @@ body = """
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('-u', '-url', '--gn-url', type=str, help='URL to search for e.g. https://dev.georchestra.org/geonetwork', required=True)
-parser.add_argument('-t', '--tpl', type=str, help='Custom output template, must contain DOMAIN_TPL and EXTENSION_TPL string inside', default=None)
+parser.add_argument('-t', '--tpl', type=str, help='Custom output template, must contain DOMAIN_TPL and EXTENSION_TPL string inside, Default, all .tpl files in templates/', default=None)
 parser.add_argument('-wr', '--write-response', type=bool, help='Write response in file', default=False, const=True, nargs='?')
 args = parser.parse_args()
 
@@ -61,8 +61,9 @@ def main():
     if args.tpl is not None:
         write_file(args.tpl, domains)
     else:
-        write_file('templates/security-proxy.tpl', domains)
-        write_file('templates/mapstore2.tpl', domains)
+        for x in os.listdir('templates/'):
+            if x.endswith(".tpl"):
+                write_file('templates/' + x, domains)
 
 
     print('Done with', domains.__len__(), 'unique domains')
